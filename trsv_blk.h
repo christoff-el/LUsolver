@@ -1,8 +1,6 @@
 #ifndef LUSOLVER_TRSV_BLK_H
 #define LUSOLVER_TRSV_BLK_H 1
 
-#include <iostream>
-
 template <typename IndexType, typename A, typename X>
 void
 trsv_blk(char uplo, char trans, char diag, IndexType n,
@@ -138,7 +136,7 @@ if (uplo == 'U' || uplo == 'u') {
 				for (int j=i+1; j<n; ++j) {
 					for (int k=0; k<m; ++k) {			//For each system
 
-						x[i*ldx +k] -= a[i*lda +j] * x[j*lda +k];
+						x[i*ldx +k] -= a[i*lda +j] * x[j*ldx +k];
 						
 					}
 				}

@@ -128,7 +128,7 @@ void testTRSV(int n) {
 	trsv('L', 'T', 'U', n, A_L_D, lda, b_L_T_D, incX);
 
 	//Output results:
-	cout << "\nResults:\n" << endl;
+	cout << "\nResults for trsv:\n" << endl;
 	
 	double err_U = errCalc(n,x,b_U);
 	double err_U_T = errCalc(n,x,b_U_T);
@@ -192,6 +192,8 @@ void testTRSV_BLK(int n, int m) {
         
         	A_U[j*n +i] = 0;
         	A_L[i*n +j] = 0;
+        	A_U_D[j*n +i] = 0;
+        	A_L_D[i*n +j] = 0;
         	
         	double tmp = rand()/(double)RAND_MAX;
             A_U[i*n +j] = tmp;
@@ -234,7 +236,7 @@ void testTRSV_BLK(int n, int m) {
 	    		b_L_D[i*m +k] += A_L_D[i*n +j] * x[j*m +k];
     		
     		}
-    	
+
     		b_U_T[i*m +k] = b_L[i*m +k];
 	    	b_L_T[i*m +k] = b_U[i*m +k];
     	
@@ -245,10 +247,10 @@ void testTRSV_BLK(int n, int m) {
     	}
     }
     
-    cout<<"\nb:"<<endl;
+   /* cout<<"\nb:"<<endl;
     for (int i=0; i<n; ++i) {
     	for (int j=0; j<m; ++j) {
-    		cout << b_U[i*m +j] << " ";
+    		cout << b_L_D[i*m +j] << " ";
     	}
     	cout << endl;
     }
@@ -262,11 +264,11 @@ void testTRSV_BLK(int n, int m) {
     cout<<"\nA:"<<endl;
     for (int i=0; i<n; ++i) {
     	for (int j=0; j<n; ++j) {
-    		cout << A_U[i*n +j] << " ";
+    		cout << A_L_D[i*n +j] << " ";
     	}
     	cout << endl;
     }
-	
+	*/
 	//Solve using the solver:
 	int lda = n;
 	int ldx = m;
@@ -284,8 +286,16 @@ void testTRSV_BLK(int n, int m) {
 	trsv_blk('L', 'N', 'U', n, A_L_D, lda, b_L_D, incX, ldx, m);
 	trsv_blk('L', 'T', 'U', n, A_L_D, lda, b_L_T_D, incX, ldx, m);
 
+	/*cout<<"\nb:"<<endl;
+    for (int i=0; i<n; ++i) {
+    	for (int j=0; j<m; ++j) {
+    		cout << b_U_T_D[i*m +j] << " ";
+    	}
+    	cout << endl;
+    }*/
+    
 	//Output results:
-	cout << "\nResults:\n" << endl;
+	cout << "\nResults for trsv_blk:\n" << endl;
 	
 	double err_U = errCalc2d(n,m,x,b_U);
 	double err_U_T = errCalc2d(n,m,x,b_U_T);
