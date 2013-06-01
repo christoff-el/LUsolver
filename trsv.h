@@ -72,6 +72,8 @@ ASSUMES ROW-MAJOR STORAGE
 
 ****************************************/
 
+IndexType firstInxX = (copysign(1,incX) < 0) ? (n-1)*(-incX) : 0;
+
 /*****UPPER TRIANGULAR*****/
 if (uplo == 'U' || uplo == 'u') {
 
@@ -81,10 +83,10 @@ if (uplo == 'U' || uplo == 'u') {
 		/*****UPPER TRIANGULAR / UNIT TRIANGULAR / NO TRANSPOSE*****/
 		if (trans == 'N' || trans == 'n') {
 
-			for (int i=n-1; i>=0; --i) {
-				for (int j=i+1; j<n; ++j) {
+			for (int i=n-1, iX=firstInxX+((n-1)*incX); i>=0; --i, iX-=incX) {
+				for (int j=i+1, jX=iX+incX; j<n; ++j, jX+=incX) {
 
-					x[i] -= a[i*lda +j] * x[j];
+					x[iX] -= a[i*lda +j] * x[jX];
 
 				}
 			}
@@ -94,10 +96,10 @@ if (uplo == 'U' || uplo == 'u') {
 		/*****UPPER TRIANGULAR / UNIT TRIANGULAR / TRANSPOSE*****/
 		else if (trans == 'T' || trans == 't') {
 
-			for (int i=0; i<n; ++i) {
-				for (int j=0; j<i; ++j) {
+			for (int i=0, iX=firstInxX; i<n; ++i, iX+=incX) {
+				for (int j=0, jX=firstInxX; j<i; ++j, jX+=incX) {
 
-					x[i] -= a[j*lda +i] * x[j];
+					x[iX] -= a[j*lda +i] * x[jX];
 
 				}
 			}
@@ -112,15 +114,15 @@ if (uplo == 'U' || uplo == 'u') {
 		/*****UPPER TRIANGULAR / NOT UNIT TRIANGULAR / NO TRANSPOSE*****/
 		if (trans == 'N' || trans == 'n') {
 
-			for (int i=n-1; i>=0; --i) {
+			for (int i=n-1, iX=firstInxX+((n-1)*incX); i>=0; --i, iX-=incX) {
 
-				for (int j=i+1; j<n; ++j) {
+				for (int j=i+1, jX=iX+incX; j<n; ++j, jX+=incX) {
 
-					x[i] -= a[i*lda +j] * x[j];
+					x[iX] -= a[i*lda +j] * x[jX];
 
 				}
 
-				x[i] /= a[i*lda +i];
+				x[iX] /= a[i*lda +i];
 
 			}
 
@@ -129,15 +131,15 @@ if (uplo == 'U' || uplo == 'u') {
 		/*****UPPER TRIANGULAR / NOT UNIT TRIANGULAR / TRANSPOSE*****/
 		else if (trans == 'T' || trans == 't') {
 
-			for (int i=0; i<n; ++i) {
+			for (int i=0, iX=firstInxX; i<n; ++i, iX+=incX) {
 
-				for (int j=0; j<i; ++j) {
+				for (int j=0, jX=firstInxX; j<i; ++j, jX+=incX) {
 
-					x[i] -= a[j*lda +i] * x[j];
+					x[iX] -= a[j*lda +i] * x[jX];
 
 				}
 
-				x[i] /= a[i*lda +i];
+				x[iX] /= a[i*lda +i];
 
 			}
 
@@ -155,10 +157,10 @@ else if (uplo == 'L' || uplo == 'l') {
 		/*****LOWER TRIANGULAR / UNIT TRIANGULAR / NO TRANSPOSE*****/
 		if (trans == 'N' || trans == 'n') {
 
-			for (int i=0; i<n; ++i) {
-				for (int j=0; j<i; ++j) {
+			for (int i=0, iX=firstInxX; i<n; ++i, iX+=incX) {
+				for (int j=0, jX=firstInxX; j<i; ++j, jX+=incX) {
 			
-					x[i] -= a[i*lda +j] * x[j];
+					x[iX] -= a[i*lda +j] * x[jX];
 
 				}
 			}
@@ -168,10 +170,10 @@ else if (uplo == 'L' || uplo == 'l') {
 		/*****LOWER TRIANGULAR / UNIT TRIANGULAR / TRANSPOSE*****/
 		else if (trans == 'T' || trans == 't') {
 
-			for (int i=n-1; i>=0; --i) {
-				for (int j=i+1; j<n; ++j) {
+			for (int i=n-1, iX=firstInxX+((n-1)*incX); i>=0; --i, iX-=incX) {
+				for (int j=i+1, jX=iX+incX; j<n; ++j, jX+=incX) {
 
-					x[i] -= a[j*lda +i] * x[j];
+					x[iX] -= a[j*lda +i] * x[jX];
 
 				}
 			}
@@ -186,15 +188,15 @@ else if (uplo == 'L' || uplo == 'l') {
 		/*****LOWER TRIANGULAR / NOT UNIT TRIANGULAR / NO TRANSPOSE*****/
 		if (trans == 'N' || trans == 'n') {
 
-			for (int i=0; i<n; ++i) {
+			for (int i=0, iX=firstInxX; i<n; ++i, iX+=incX) {
 
-				for (int j=0; j<i; ++j) {
+				for (int j=0, jX=firstInxX; j<i; ++j, jX+=incX) {
 			
-					x[i] -= a[i*lda +j] * x[j];
+					x[iX] -= a[i*lda +j] * x[jX];
 				
 				}
 
-				x[i] /= a[i*lda +i];
+				x[iX] /= a[i*lda +i];
 
 			}
 
@@ -203,15 +205,15 @@ else if (uplo == 'L' || uplo == 'l') {
 		/*****LOWER TRIANGULAR / NOT UNIT TRIANGULAR / TRANSPOSE*****/
 		else if (trans == 'T' || trans == 't') {
 	
-			for (int i=n-1; i>=0; --i) {
+			for (int i=n-1, iX=firstInxX+((n-1)*incX); i>=0; --i, iX-=incX) {
 
-				for (int j=i+1; j<n; ++j) {
+				for (int j=i+1, jX=iX+incX; j<n; ++j, jX+=incX) {
 
-					x[i] -= a[j*lda +i] * x[j];
+					x[iX] -= a[j*lda +i] * x[jX];
 
 				}
 
-				x[i] /= a[i*lda +i];
+				x[iX] /= a[i*lda +i];
 
 			}
 

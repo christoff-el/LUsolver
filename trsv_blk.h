@@ -5,8 +5,8 @@ template <typename IndexType, typename A, typename X>
 void
 trsv_blk(char uplo, char trans, char diag, IndexType n,
 		const A *a, IndexType lda,
-				X *x, IndexType incX,
-					IndexType ldx, IndexType m)
+				X *x, IndexType ldx, 
+					IndexType m)
 {
 
 /***** Triangular Solver where b is a matrix *****
@@ -67,11 +67,6 @@ x:
 	Array, DIMENSION at least (1 + (n - 1)*abs(incx)). 
 		Before entry, the incremented array x must contain the n-element right-hand 
 		side vector b.
-
-incx:
-	INTEGER. 
-	Specifies the increment for the elements of x.
-		The value of incx must not be zero.
 
 ldx:
 	INTEGER

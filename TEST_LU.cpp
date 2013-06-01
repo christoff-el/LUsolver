@@ -8,7 +8,7 @@
 
 using namespace std;
 
-double errCalc(int n, double *exact, double *calc);
+double errCalc(int n, double *exact, double *calc, int incX);
 double errCalc2d(int n, int m, double *exact, double *calc);
 void testTRSV(int n);
 void testTRSV_BLK(int n, int m);
@@ -56,6 +56,14 @@ void testTRSV(int n) {
 	double *b_L_D = new double[n];
 	double *b_U_T_D = new double[n];
 	double *b_L_T_D = new double[n];
+	double *b_U_M = new double[n];			//_M same as above, but backwards.
+	double *b_L_M = new double[n];
+	double *b_U_T_M = new double[n];		//=b_L_M
+	double *b_L_T_M = new double[n];		//=b_U_M
+	double *b_U_D_M = new double[n];
+	double *b_L_D_M = new double[n];
+	double *b_U_T_D_M = new double[n];
+	double *b_L_T_D_M = new double[n];
 	
 	//Fill A, x with random numbers:
 	srand(time(NULL));
@@ -82,7 +90,6 @@ void testTRSV(int n) {
     }
     
     //b = Ax
-    //cout << "b:" << endl;
     for (int i=0; i<n; ++i) {
     
     	b_U[i] = 0;
@@ -90,6 +97,12 @@ void testTRSV(int n) {
     	
     	b_U_D[i] = 0;
     	b_L_D[i] = 0;
+    	
+    	b_U_M[n-1-i] = 0;
+    	b_L_M[n-1-i] = 0;
+    	
+    	b_U_D_M[n-1-i] = 0;
+    	b_L_D_M[n-1-i] = 0;
     	
     	for (int j=0; j<n; ++j) {
     	
@@ -99,6 +112,12 @@ void testTRSV(int n) {
     		b_U_D[i] += A_U_D[i*n +j] * x[j];
     		b_L_D[i] += A_L_D[i*n +j] * x[j];
     		
+    		b_U_M[n-1-i] += A_U[i*n +j] * x[j];
+    		b_L_M[n-1-i] += A_L[i*n +j] * x[j];
+    		
+    		b_U_D_M[n-1-i] += A_U_D[i*n +j] * x[j];
+    		b_L_D_M[n-1-i] += A_L_D[i*n +j] * x[j];
+    		
     	}
     	
     	b_U_T[i] = b_L[i];
@@ -107,39 +126,69 @@ void testTRSV(int n) {
     	b_U_T_D[i] = b_L_D[i];
     	b_L_T_D[i] = b_U_D[i];
     	
-    	//cout << b_U_T[i] << endl;
+    	b_U_T_M[n-1-i] = b_L_M[n-1-i];
+    	b_L_T_M[n-1-i] = b_U_M[n-1-i];
+    	
+    	b_U_T_D_M[n-1-i] = b_L_D_M[n-1-i];
+    	b_L_T_D_M[n-1-i] = b_U_D_M[n-1-i];
     	
     }
+
 	
 	//Solve using the solver:
 	int lda = n;
-	int incX = 1;
 
+	//incX=1:
 	//Upper:
-	trsv('U', 'N', 'N', n, A_U, lda, b_U, incX);
-	trsv('U', 'T', 'N', n, A_U, lda, b_U_T, incX);
-	trsv('U', 'N', 'U', n, A_U_D, lda, b_U_D, incX);
-	trsv('U', 'T', 'U', n, A_U_D, lda, b_U_T_D, incX);
+	trsv('U', 'N', 'N', n, A_U, lda, b_U, 1);
+	trsv('U', 'T', 'N', n, A_U, lda, b_U_T, 1);
+	trsv('U', 'N', 'U', n, A_U_D, lda, b_U_D, 1);
+	trsv('U', 'T', 'U', n, A_U_D, lda, b_U_T_D, 1);
 
 	//Lower:
-	trsv('L', 'N', 'N', n, A_L, lda, b_L, incX);
-	trsv('L', 'T', 'N', n, A_L, lda, b_L_T, incX);
-	trsv('L', 'N', 'U', n, A_L_D, lda, b_L_D, incX);
-	trsv('L', 'T', 'U', n, A_L_D, lda, b_L_T_D, incX);
+	trsv('L', 'N', 'N', n, A_L, lda, b_L, 1);
+	trsv('L', 'T', 'N', n, A_L, lda, b_L_T, 1);
+	trsv('L', 'N', 'U', n, A_L_D, lda, b_L_D, 1);
+	trsv('L', 'T', 'U', n, A_L_D, lda, b_L_T_D, 1);
+	
+	//incX=-1
+	//Upper:
+	trsv('U', 'N', 'N', n, A_U, lda, b_U_M, -1);
+	trsv('U', 'T', 'N', n, A_U, lda, b_U_T_M, -1);
+	trsv('U', 'N', 'U', n, A_U_D, lda, b_U_D_M, -1);
+	trsv('U', 'T', 'U', n, A_U_D, lda, b_U_T_D_M, -1);
+
+	//Lower:
+	trsv('L', 'N', 'N', n, A_L, lda, b_L_M, -1);
+	trsv('L', 'T', 'N', n, A_L, lda, b_L_T_M, -1);
+	trsv('L', 'N', 'U', n, A_L_D, lda, b_L_D_M, -1);
+	trsv('L', 'T', 'U', n, A_L_D, lda, b_L_T_D_M, -1);
+
 
 	//Output results:
 	cout << "\nResults for trsv:\n" << endl;
 	
-	double err_U = errCalc(n,x,b_U);
-	double err_U_T = errCalc(n,x,b_U_T);
-	double err_U_D = errCalc(n,x,b_U_D);
-	double err_U_T_D = errCalc(n,x,b_U_T_D);
+	double err_U = errCalc(n,x,b_U,1);
+	double err_U_T = errCalc(n,x,b_U_T,1);
+	double err_U_D = errCalc(n,x,b_U_D,1);
+	double err_U_T_D = errCalc(n,x,b_U_T_D,1);
 	
-	double err_L = errCalc(n,x,b_L);
-	double err_L_T = errCalc(n,x,b_L_T);
-	double err_L_D = errCalc(n,x,b_L_D);
-	double err_L_T_D = errCalc(n,x,b_L_T_D);
+	double err_L = errCalc(n,x,b_L,1);
+	double err_L_T = errCalc(n,x,b_L_T,1);
+	double err_L_D = errCalc(n,x,b_L_D,1);
+	double err_L_T_D = errCalc(n,x,b_L_T_D,1);
 	
+	double err_U_M = errCalc(n,x,b_U_M,-1);
+	double err_U_T_M = errCalc(n,x,b_U_T_M,-1);
+	double err_U_D_M = errCalc(n,x,b_U_D_M,-1);
+	double err_U_T_D_M = errCalc(n,x,b_U_T_D_M,-1);
+	
+	double err_L_M = errCalc(n,x,b_L_M,-1);
+	double err_L_T_M = errCalc(n,x,b_L_T_M,-1);
+	double err_L_D_M = errCalc(n,x,b_L_D_M,-1);
+	double err_L_T_D_M = errCalc(n,x,b_L_T_D_M,-1);
+	
+	cout << "incX = 1:" << endl;
 	cout << fixed << setprecision(4) << "Upper: " << err_U << "\t\t\t ----> " << ((err_U<PREC)?"PASS":"FAIL") << endl;
 	cout << fixed << setprecision(4) << "Upper transpose: " << err_U_T << "\t\t ----> " << ((err_U_T<PREC)?"PASS":"FAIL") << endl;
 	cout << fixed << setprecision(4) << "Upper unit: " << err_U_D << "\t\t ----> " << ((err_U_D<PREC)?"PASS":"FAIL") << endl;
@@ -149,6 +198,17 @@ void testTRSV(int n) {
 	cout << fixed << setprecision(4) << "Lower transpose: " << err_L_T << "\t\t ----> " << ((err_L_T<PREC)?"PASS":"FAIL") << endl;
 	cout << fixed << setprecision(4) << "Lower unit: " << err_L_D << "\t\t ----> " << ((err_L_D<PREC)?"PASS":"FAIL") << endl;
 	cout << fixed << setprecision(4) << "Lower unit transpose: " << err_L_T_D << "\t ----> " << ((err_L_T_D<PREC)?"PASS":"FAIL") << endl;
+
+	cout << "\nincX = -1:" << endl;
+	cout << fixed << setprecision(4) << "Upper: " << err_U_M << "\t\t\t ----> " << ((err_U_M<PREC)?"PASS":"FAIL") << endl;
+	cout << fixed << setprecision(4) << "Upper transpose: " << err_U_T_M << "\t\t ----> " << ((err_U_T_M<PREC)?"PASS":"FAIL") << endl;
+	cout << fixed << setprecision(4) << "Upper unit: " << err_U_D_M << "\t\t ----> " << ((err_U_D_M<PREC)?"PASS":"FAIL") << endl;
+	cout << fixed << setprecision(4) << "Upper unit transpose: " << err_U_T_D_M << "\t ----> " << ((err_U_T_D_M<PREC)?"PASS":"FAIL") << endl;
+		
+	cout << fixed << setprecision(4) << "Lower: " << err_L_M << "\t\t\t ----> " << ((err_L_M<PREC)?"PASS":"FAIL") << endl;
+	cout << fixed << setprecision(4) << "Lower transpose: " << err_L_T_M << "\t\t ----> " << ((err_L_T_M<PREC)?"PASS":"FAIL") << endl;
+	cout << fixed << setprecision(4) << "Lower unit: " << err_L_D_M << "\t\t ----> " << ((err_L_D_M<PREC)?"PASS":"FAIL") << endl;
+	cout << fixed << setprecision(4) << "Lower unit transpose: " << err_L_T_D_M << "\t ----> " << ((err_L_T_D_M<PREC)?"PASS":"FAIL") << endl;
 
 
 	//Clean up:
@@ -165,6 +225,14 @@ void testTRSV(int n) {
 	delete[] b_L_D;
 	delete[] b_U_T_D;
 	delete[] b_L_T_D;
+	delete[] b_U_M;
+	delete[] b_L_M;
+	delete[] b_U_T_M;
+	delete[] b_L_T_M;
+	delete[] b_U_D_M;
+	delete[] b_L_D_M;
+	delete[] b_U_T_D_M;
+	delete[] b_L_T_D_M;
 	
 }
 
@@ -272,19 +340,18 @@ void testTRSV_BLK(int n, int m) {
 	//Solve using the solver:
 	int lda = n;
 	int ldx = m;
-	int incX = 1;
 
 	//Upper:
-	trsv_blk('U', 'N', 'N', n, A_U, lda, b_U, incX, ldx, m);
-	trsv_blk('U', 'T', 'N', n, A_U, lda, b_U_T, incX, ldx, m);
-	trsv_blk('U', 'N', 'U', n, A_U_D, lda, b_U_D, incX, ldx, m);
-	trsv_blk('U', 'T', 'U', n, A_U_D, lda, b_U_T_D, incX, ldx, m);
+	trsv_blk('U', 'N', 'N', n, A_U, lda, b_U, ldx, m);
+	trsv_blk('U', 'T', 'N', n, A_U, lda, b_U_T, ldx, m);
+	trsv_blk('U', 'N', 'U', n, A_U_D, lda, b_U_D, ldx, m);
+	trsv_blk('U', 'T', 'U', n, A_U_D, lda, b_U_T_D, ldx, m);
 
 	//Lower:
-	trsv_blk('L', 'N', 'N', n, A_L, lda, b_L, incX, ldx, m);
-	trsv_blk('L', 'T', 'N', n, A_L, lda, b_L_T, incX, ldx, m);
-	trsv_blk('L', 'N', 'U', n, A_L_D, lda, b_L_D, incX, ldx, m);
-	trsv_blk('L', 'T', 'U', n, A_L_D, lda, b_L_T_D, incX, ldx, m);
+	trsv_blk('L', 'N', 'N', n, A_L, lda, b_L, ldx, m);
+	trsv_blk('L', 'T', 'N', n, A_L, lda, b_L_T, ldx, m);
+	trsv_blk('L', 'N', 'U', n, A_L_D, lda, b_L_D, ldx, m);
+	trsv_blk('L', 'T', 'U', n, A_L_D, lda, b_L_T_D, ldx, m);
 
 	/*cout<<"\nb:"<<endl;
     for (int i=0; i<n; ++i) {
@@ -335,13 +402,15 @@ void testTRSV_BLK(int n, int m) {
 	
 }
 
-double errCalc(int n, double *exact, double *calc) {
+double errCalc(int n, double *exact, double *calc, int incX) {
 
 	double error = 0;
 	
-	for (int i=0; i<n; ++i) {
+	int firstInxX = (copysign(1,incX) < 0) ? (n-1)*(-incX) : 0;
 	
-		error += fabs(exact[i] - calc[i]);
+	for (int i=0, iX=firstInxX; i<n; ++i, iX+=incX) {
+	
+		error += fabs(exact[i] - calc[iX]);
 		
 	}
 	
